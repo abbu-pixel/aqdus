@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Titanic Survival Predictor</title>
+  <!-- Inline CSS: single-file UI -->
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#0ea5e9; --card:#ffffff;
+      --accent:#06b6d4; --muted:#6b7280; --success:#10b981; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(circle at 10% 10%, rgba(14,165,233,0.12), transparent 10%),
+                  linear-gradient(135deg,var(--bg1), #071129 60%);
+      color:#0f172a;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .card{
+      width:100%;
+      max-width:760px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+      border-radius:16px;
+      box-shadow: 0 12px 40px rgba(2,6,23,0.45);
+      overflow:hidden;
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      gap:0;
+    }
+
+    .info {
+      padding:28px 36px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .hero {
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+
+    .logo {
+      width:64px;
+      height:64px;
+      border-radius:12px;
+      background: linear-gradient(135deg,var(--bg2),var(--accent));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      font-size:20px;
+      box-shadow: 0 6px 20px rgba(14,165,233,0.18);
+    }
+
+    h1{ margin:6px 0 0; font-size:20px; letter-spacing:-0.2px }
+    p.lead{ color:var(--muted); margin:10px 0 20px; }
+
+    .examples { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap }
+    .chip {
+      background:#f1f5f9; color:#0f172a; padding:6px 10px; border-radius:999px;
+      font-size:13px; border:1px solid rgba(15,23,42,0.04);
+    }
+
+    /* form */
+    form {
+      padding:22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(248,249,250,0.99));
+      border-left: 1px solid rgba(2,6,23,0.04);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .row{ display:flex; gap:12px; }
+    .col{ flex:1 }
+
+    label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+    input[type="number"], select {
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid #e6e9ee;
+      background:white;
+      font-size:15px;
+      outline:none;
+      transition:box-shadow .15s, border-color .15s;
+    }
+    input[type="number"]:focus, select:focus { border-color:var(--accent); box-shadow:0 6px 18px rgba(6,182,212,0.08) }
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      background:linear-gradient(90deg,var(--bg2),var(--accent));
+      color:white;
+      padding:12px 16px;
+      border-radius:10px;
+      border:0;
+      font-weight:600;
+      cursor:pointer;
+      box-shadow: 0 8px 24px rgba(6,182,212,0.12);
+    }
+    .btn:active{ transform:translateY(1px) }
+
+    .result {
+      margin-top:12px;
+      padding:14px;
+      border-radius:10px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      justify-content:center;
+    }
+    .ok{ background: linear-gradient(90deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02)); color:var(--success); border:1px solid rgba(16,185,129,0.12) }
+    .no{ background: linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.01)); color:var(--danger); border:1px solid rgba(239,68,68,0.08) }
+
+    footer.note { padding:12px 22px; font-size:13px; color:var(--muted); text-align:center; grid-column:1/-1 }
+
+    /* responsive */
+    @media (max-width:880px){
+      .card{ grid-template-columns: 1fr; }
+      .info{ padding:20px }
+      form{ padding:18px }
+    }
+  </style>
+</head>
+<body>
+  <div class="card" role="main" aria-labelledby="title">
+    <div class="info">
+      <div class="hero">
+        <div class="logo">TS</div>
+        <div>
+          <h1 id="title">Titanic Survival Predictor</h1>
+          <p class="lead">Enter passenger details and get a quick prediction — powered by your trained model.</p>
+        </div>
+      </div>
+
+      <div class="examples" aria-hidden="true">
+        <div class="chip">Female, Age 28, Fare 72, 1st class</div>
+        <div class="chip">Male, Age 45, Fare 8, 3rd class</div>
+        <div class="chip">Female, Age 16, Fare 12, 3rd class</div>
+      </div>
+
+      <div style="margin-top:18px; color:var(--muted); font-size:13px">
+        Tip: Make sure your Flask endpoint `/predict` accepts JSON:  
+        <code style="background:#f8fafc;padding:4px 6px;border-radius:4px;font-size:12px">{"Sex":0,"Age":30,"Fare":7.25,"Pclass":3}</code>
+      </div>
+    </div>
+
+    <form id="predictForm" onsubmit="return false;" aria-label="Prediction form">
+      <div class="row">
+        <div class="col">
+          <label for="sex">Sex</label>
+          <select id="sex" required>
+            <option value="0">Male</option>
+            <option value="1" selected>Female</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="pclass">Passenger Class</label>
+          <select id="pclass" required>
+            <option value="1">1 - First</option>
+            <option value="2">2 - Second</option>
+            <option value="3" selected>3 - Third</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="age">Age</label>
+          <input id="age" type="number" min="0" step="0.1" placeholder="e.g., 29.5" required />
+        </div>
+        <div class="col">
+          <label for="fare">Fare (ticket price)</label>
+          <input id="fare" type="number" min="0" step="0.01" placeholder="e.g., 7.25" required />
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+        <button class="btn" id="predictBtn" title="Predict">Predict</button>
+        <button type="button" style="background:#eef2ff;color:#3730a3;border-radius:10px;padding:10px 12px;border:1px solid rgba(99,102,241,0.12);cursor:pointer" id="sampleBtn">Fill sample</button>
+      </div>
+
+      <div id="output" aria-live="polite"></div>
+
+      <footer class="note">Built for practice — host your Flask app and POST to <strong>/predict</strong>. Model must be loaded server-side.</footer>
+    </form>
+  </div>
+
+  <!-- Inline JS: single-file behavior -->
+  <script>
+    const predictBtn = document.getElementById('predictBtn');
+    const output = document.getElementById('output');
+    const form = document.getElementById('predictForm');
+
+    // sample filler
+    document.getElementById('sampleBtn').addEventListener('click', () => {
+      document.getElementById('sex').value = "1";
+      document.getElementById('pclass').value = "1";
+      document.getElementById('age').value = "28";
+      document.getElementById('fare').value = "72";
+      output.innerHTML = '';
+    });
+
+    async function postPredict(payload){
+      // send to same origin /predict endpoint
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error('Server error: ' + (text || res.status));
+        }
+        return await res.json();
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    predictBtn.addEventListener('click', async () => {
+      // simple validation
+      const sex = document.getElementById('sex').value;
+      const pclass = document.getElementById('pclass').value;
+      const age = parseFloat(document.getElementById('age').value);
+      const fare = parseFloat(document.getElementById('fare').value);
+
+      if (Number.isNaN(age) || Number.isNaN(fare)) {
+        output.innerHTML = '<div class="result no">Please enter valid numeric Age and Fare.</div>';
+        return;
+      }
+
+      // show loading state
+      predictBtn.disabled = true;
+      predictBtn.textContent = 'Predicting...';
+
+      const payload = {
+        Sex: Number(sex),
+        Age: age,
+        Fare: fare,
+        Pclass: Number(pclass)
+      };
+
+      try {
+        const json = await postPredict(payload);
+
+        // expected response: { "survived": 1 } or similar
+        let survived = json.survived ?? json.result ?? null;
+        if (survived === null) {
+          // try to parse other patterns
+          survived = (typeof json === 'object' && Object.values(json)[0]) ?? null;
+        }
+
+        if (survived === 1 || survived === "1" || survived === true) {
+          output.innerHTML = '<div class="result ok">🚀 Prediction: Survived</div>';
+        } else if (survived === 0 || survived === "0" || survived === false) {
+          output.innerHTML = '<div class="result no">☹️ Prediction: Did not survive</div>';
+        } else {
+          output.innerHTML = '<div class="result no">⚠️ Unexpected response from server: ' + JSON.stringify(json) + '</div>';
+        }
+      } catch (err) {
+        output.innerHTML = '<div class="result no">Error: ' + (err.message || err) + '</div>';
+      } finally {
+        predictBtn.disabled = false;
+        predictBtn.textContent = 'Predict';
+      }
+    });
+
+    // allow submit by Enter inside inputs
+    form.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        predictBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
